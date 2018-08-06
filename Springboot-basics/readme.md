@@ -202,20 +202,114 @@ public class Book {
 ```java
 package com.hcl.symantec.rnd.basic.springboot;
 
-import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 
+ * This the end point which is used to map the user request to fetch or updated the books in a book repository.
+ * @author naveen_b
+ *
+ */
 @RestController
 public class BooksController {
+	
+	@Autowired
+	BookService bookservice;
+	
 	@GetMapping("/books")
 	public List<Book> getAllBooks() {
-		return Arrays.asList(
-				new Book("l1", "Mastering Spring", "Naveen Bhatt"));
+		
+		return bookservice.getAllBooks();		
 	}
 }
+```
+---
+
+### /src/main/java/com/hcl/symantec/rnd/basic/springboot/BookService.java
+
+```java
+package com.hcl.symantec.rnd.basic.springboot;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * This is Service that performs the business logic and delegates to fetch data from DAO layer.
+ * 
+ * @author naveen_b
+ *
+ */
+@Service
+public class BookService {
+	
+	@Autowired
+	BookDAO bookDAO;
+	
+	/**
+	 * This method delegate the it call to DAO layer to fetch information of the book
+	 * 
+	 * @return List of books
+	 */
+	
+	public List<Book> getAllBooks(){
+		return bookDAO.loadbooks();
+		
+		
+	}
+}
+
+```
+---
+
+### /src/main/java/com/hcl/symantec/rnd/basic/springboot/BookDAO.java
+
+package com.hcl.symantec.rnd.basic.springboot;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+
+/*
+ *  This is DAO class which interact with the service layer and  database. Fetch/store the data 
+ *  as per the business logic.
+ * @author naveen_b
+ *
+ */
+@Repository
+public class BookDAO {
+	
+	/**
+	 * Load book information from the back end
+	 * 
+	 * @return list of books
+	 */
+	public List<Book> loadbooks(){
+		
+		return Arrays.asList(
+				new Book("l1", "Mastering Spring", "Naveen Bhatt"), new Book("l1", "Mastering Spring", "Vinod Pujara"));
+	}
+	
+	/*private SessionFactory sessionFactory;
+
+    public void setSessionFactory(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
+    public Session sess() {
+        return sessionFactory.getCurrentSession();
+    }*/
+
+}
+
+
 ```
 ---
 
@@ -258,11 +352,16 @@ management.security.enabled=false
 ```java
 package com.hcl.symantec.rnd.basic.springboot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -274,8 +373,17 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @WebMvcTest(value =BooksController.class)
 public class SpringbootBasicApplicationTests {
 
+	/**
+	 * Autowire's the Mocking frame work to perform the task.
+	 */
 	@Autowired
 	private MockMvc mockMvc;
+	
+	/**
+	 * Injects the service class and mock the data on it.
+	 */
+	@MockBean
+	private BookService bookService;
 	
 	/**
 	 *  This test case validates that the the code#getAllBooks method retrun's the correct list of books that are mocked 
@@ -286,7 +394,12 @@ public class SpringbootBasicApplicationTests {
 	
 	@Test
 	public void getAllBooks() throws Exception {
+		
+		List<Book> mockBookList = new ArrayList<>();
+				mockBookList.add(new Book("l1", "Mastering Spring", "Naveen Bhatt"));
 	 
+		Mockito.when(bookService.getAllBooks()).thenReturn(mockBookList);
+		
 		
 		RequestBuilder reqBuilder = MockMvcRequestBuilders.get("/books").accept(MediaType.APPLICATION_JSON);
 		MvcResult result =  mockMvc.perform(reqBuilder).andReturn();
@@ -301,6 +414,7 @@ public class SpringbootBasicApplicationTests {
 	}
 
 }
+
 
 ```
 ---
