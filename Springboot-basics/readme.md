@@ -1,16 +1,14 @@
-##  First 10 Steps in Spring Boot
+##  First Basic of Spring Boot
 
-- Step 1 : Introduction to Spring Boot - Goals and Important Features
-- Step 2 : Developing Spring Applications before Spring Boot
-- Step 3 : Using Spring Initializr to create a Spring Boot Application
-- Step 4 : Creating a Simple REST Controller
-- Step 5 : What is Spring Boot Auto Configuration?
-- Step 6 : Spring Boot vs Spring vs Spring MVC
-- Step 7 : Spring Boot Starter Projects - Starter Web and Starter JPA
-- Step 8 : Overview of different Spring Boot Starter Projects
-- Step 9 : Spring Boot Actuator
-- Step 10 : Spring Boot Developer Tools
-- Spring Boot - Conclusion
+- Introduction to Spring Boot - Goals and Important Features
+- Developing Spring Applications before Spring Boot
+- Using Spring Initializr to create a Spring Boot Application
+- Creating a Simple REST Controller
+-  What is Spring Boot Auto Configuration?
+- Spring Boot Starter Projects - Starter Web and Starter JPA
+- Spring Boot Actuator
+- Spring Boot Developer Tools
+
 
 ## Complete Code Example
 
@@ -52,12 +50,12 @@ http://localhost:8080/books => Few hardcoded books
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.in28minutes.springboot.basics</groupId>
-	<artifactId>springboot-in-10-steps</artifactId>
+	<groupId>com.hcl.symantec.rnd.springboot.basics</groupId>
+	<artifactId>springboot-basics</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>springboot-in-10-steps</name>
+	<name>springboot-boot-learning</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
@@ -161,24 +159,24 @@ http://localhost:8080/books => Few hardcoded books
 ```
 ---
 
-### /src/main/java/com/in28minutes/springboot/basics/springbootin10steps/Book.java
+### /src/main/java/com/hcl/symantec/rnd/basic/springboot/Book.java
 
 ```java
-package com.in28minutes.springboot.basics.springbootin10steps;
+package com.hcl.symantec.rnd.basic.springboot;
 
 public class Book {
-	long id;
+	String id;
 	String name;
 	String author;
 
-	public Book(long id, String name, String author) {
+	public Book(String id, String name, String author) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.author = author;
 	}
 
-	public long getId() {
+	public String getId() {
 		return id;
 	}
 
@@ -199,10 +197,10 @@ public class Book {
 ```
 ---
 
-### /src/main/java/com/in28minutes/springboot/basics/springbootin10steps/BooksController.java
+### /src/main/java/com/hcl/symantec/rnd/basic/springboot/BooksController.java
 
 ```java
-package com.in28minutes.springboot.basics.springbootin10steps;
+package com.hcl.symantec.rnd.basic.springboot;
 
 import java.util.Arrays;
 import java.util.List;
@@ -215,34 +213,35 @@ public class BooksController {
 	@GetMapping("/books")
 	public List<Book> getAllBooks() {
 		return Arrays.asList(
-				new Book(1l, "Mastering Spring 5.2", "Ranga Karanam"));
+				new Book("l1", "Mastering Spring", "Naveen Bhatt"));
 	}
 }
 ```
 ---
 
-### /src/main/java/com/in28minutes/springboot/basics/springbootin10steps/SpringbootIn10StepsApplication.java
+### /src/main/java/com/hcl/symantec/rnd/basic/springboot/SpringbootBasicApplication.java
 
 ```java
-package com.in28minutes.springboot.basics.springbootin10steps;
+package com.hcl.symantec.rnd.basic.springboot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
+//import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
-public class SpringbootIn10StepsApplication {
+public class SpringbootBasicApplication {
 
 	public static void main(String[] args) {
 		ApplicationContext applicationContext = 
-				SpringApplication.run(SpringbootIn10StepsApplication.class, args);
+				SpringApplication.run(SpringbootBasicApplication.class, args);
 		
 		for (String name : applicationContext.getBeanDefinitionNames()) {
 			System.out.println(name);
 		}
 	}
 }
+
 ```
 ---
 
@@ -254,24 +253,54 @@ management.security.enabled=false
 ```
 ---
 
-### /src/test/java/com/in28minutes/springboot/basics/springbootin10steps/SpringbootIn10StepsApplicationTests.java
+### /src/test/java/com/hcl/symantec/rnd/basic/springboot/SpringbootBasicApplicationTests.java
 
 ```java
-package com.in28minutes.springboot.basics.springbootin10steps;
+package com.hcl.symantec.rnd.basic.springboot;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-public class SpringbootIn10StepsApplicationTests {
+@WebMvcTest(value =BooksController.class)
+public class SpringbootBasicApplicationTests {
 
+	@Autowired
+	private MockMvc mockMvc;
+	
+	/**
+	 *  This test case validates that the the code#getAllBooks method retrun's the correct list of books that are mocked 
+	 *  and the result is return in the accepted format.
+	 *   
+	 * @throws Exception  when an error occurred while fetching data from the URI.
+	 */
+	
 	@Test
-	public void contextLoads() {
+	public void getAllBooks() throws Exception {
+	 
+		
+		RequestBuilder reqBuilder = MockMvcRequestBuilders.get("/books").accept(MediaType.APPLICATION_JSON);
+		MvcResult result =  mockMvc.perform(reqBuilder).andReturn();
+		
+		String expected = "["+"{\"name\":\"Mastering Spring\"}"+"]";
+		
+		System.out.println(result.getResponse().getContentAsString());
+		//{"id":1,"name":"Mastering Spring","author":"Naveen Bhatt"}
+		System.out.println(expected);
+		
+		JSONAssert.assertEquals(expected,result.getResponse().getContentAsString(), false);  		
 	}
 
 }
+
 ```
 ---
